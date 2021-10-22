@@ -1,0 +1,5 @@
+In this repository, we provide a software implementation of the manipulative training procedure used in the paper Counterfactual Explanations Can Be Manipulated.
+
+In order to call the adversarial models, on a dataset, call the `train_models.py` file, specifying the desired hyperparameters, dataset, and method by passing arguments (see the file for details on arguments). The script will print some output for stage one of the optimization procedure, including test accuracy after stage one, how often adding the learned perturbation results in a class flip, and the magnitude of the perturbation. It will then procede with stage2, printing off the protected, non-protected, and non-protected + delta costs, along with the test accuracy during each step.
+
+If you are interested in citing our work, please refer to the citation in the repository, in the "citation.bib" file. You can reach out to dslack@uci.edu with any questions.
