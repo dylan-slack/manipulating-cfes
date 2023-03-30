@@ -459,7 +459,7 @@ def get_obj_and_df(cfname):
 	else:
 		raise NotImplementedError
 
-def prototype_counterfactuals(model, data, positive_data, lmbda, target, cat_features, alglr=0.01, eps=1e-2, use_tqdm=False):	
+def prototype_counterfactuals(model, data, positive_data, lmbda, target, cat_features, alglr=0.01, eps=1e-10, use_tqdm=False):	
 	p = proto(model, positive_data)
 	df, counterfactual_objective = p.run_init(model, positive_data)
 	maxes, mins = torch.max(data, dim=0)[0], torch.min(data, dim=0)[0].detach().clone().numpy()
@@ -481,9 +481,9 @@ def prototype_counterfactuals(model, data, positive_data, lmbda, target, cat_fea
 			x_cf = starting_location.detach().clone().unsqueeze(0)
 			x_cf.requires_grad = True
 			cur_prediction = model(x_cf)
-			optim = torch.optim.Adam([x_cf], lr=alglr)
-
-			# update params
+			optim = torch.optim.SGD([x_cf], momentum=0.01, lr=alglr)
+			
+                        # update params
 			itera = 0
 			last_l = 0
 			converged = False
@@ -525,7 +525,7 @@ def prototype_counterfactuals(model, data, positive_data, lmbda, target, cat_fea
 
 	return torch.stack(cfs).squeeze()
 
-def wachter(model, data, positive_data, lmbda, target, cat_features, mad, alglr=1e-2, eps=1e-2, use_tqdm=False, sparse=False, opt='sgd', exit_on_greater=False):
+def wachter(model, data, positive_data, lmbda, target, cat_features, mad, alglr=1e-1, eps=1e-10, use_tqdm=False, sparse=False, opt='sgd', exit_on_greater=False):
 	if not sparse:
 		counterfactual_objective = wachter_objective
 	else:
@@ -543,7 +543,7 @@ def wachter(model, data, positive_data, lmbda, target, cat_features, mad, alglr=
 		# starting_location = torch.Tensor(np.random.uniform(low=mins, high=maxes, size=(1,len(maxes))))[0]
 		# starting_location = starting_location + torch.randn_like(starting_location)
 		# starting_location = torch.mean(data,dim=0).detach().clone()
-		lmbda = 1
+		lmbda = 1e-3
 		found = False
 
 		while repeat:
@@ -551,7 +551,7 @@ def wachter(model, data, positive_data, lmbda, target, cat_features, mad, alglr=
 			x_cf.requires_grad = True
 
 			if opt == 'sgd':
-				optim = torch.optim.SGD([x_cf], momentum=0.9, lr=alglr)
+				optim = torch.optim.SGD([x_cf], momentum=0.01, lr=alglr)
 			elif opt == 'adam':
 				optim = torch.optim.Adam([x_cf], lr=alglr)
 
